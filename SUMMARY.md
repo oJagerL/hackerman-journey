@@ -11,3 +11,4 @@
 * [Cap](machines/cap.md)
 * [Nibbles](machines/nibbles.md)
 * [Facts](machines/facts.md)
+* [WingData](machines/wingdata.md)

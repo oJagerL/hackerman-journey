@@ -476,7 +476,7 @@ Nmap comes back with a pretty clean report. And then it drops a little hint in `
 
 Browsing to the IP shows a default-looking site, but the title gives it away:
 
-<figure><img src=".gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 So we’re dealing with GetSimpleCMS, but we don’t know the exact version yet. Let’s follow robots.txt and head to `/admin`:
 

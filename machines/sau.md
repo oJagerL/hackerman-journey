@@ -103,9 +103,9 @@ The exploit idea is simple:
 
 Basically: make the server browse the internet for us. So we set a forward URL in the basket config (like the exploit describes), then browse to the basket.
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 And suddenly… the machine starts showing us what’s running internally on port 80, even though port 80 was filtered from the outside. Filtered ports hate this one weird trick. And guess what? it’s `Maltrail v0.53`. A quick search drops us straight onto a PoC: [https://github.com/spookier/Maltrail-v0.53-Exploit?tab=readme-ov-file](https://github.com/spookier/Maltrail-v0.53-Exploit?tab=readme-ov-file). (Yes, the internet continues to be a treasure trove of bad decisions).
 
