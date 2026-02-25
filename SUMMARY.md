@@ -12,3 +12,4 @@
 * [Nibbles](machines/nibbles.md)
 * [Facts](machines/facts.md)
 * [WingData](machines/wingdata.md)
+* [Interpreter](machines/interpreter.md)
