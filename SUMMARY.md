@@ -16,6 +16,4 @@
 
 ## Challenges
 
-***
-
-* [Social Media Investigation](social-media-investigation.md)
+* [Social Media Investigation](challenges/social-media-investigation.md)
