@@ -161,7 +161,7 @@ Finished
 
 Gobuster comes back with something actually useful for once: `/wordpress` is reachable. And when we browse there… we don’t get a fancy homepage — we get the WordPress setup screen.
 
-<figure><img src=".gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
 
 While poking around, we also find a `robots.txt` file doing the classic “please don’t look here” routine. It specifically disallows: `/admin-login-page.php`
 
@@ -476,35 +476,35 @@ Nmap comes back with a pretty clean report. And then it drops a little hint in `
 
 Browsing to the IP shows a default-looking site, but the title gives it away:
 
-<figure><img src=".gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 So we’re dealing with GetSimpleCMS, but we don’t know the exact version yet. Let’s follow robots.txt and head to `/admin`:
 
-<figure><img src=".gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 And yep — it’s an admin login panel. Because it’s a CTF and CTFs love lazy setups, we try: `admin:admin` . …and it works. We’re in. No drama. Just straight-up negligence.
 
-<figure><img src=".gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 Near the bottom of the panel we spot the version: `GetSimpleCMS version 3.3.15`.&#x20;
 
 Quick searching doesn’t reveal any juicy RCE — mostly XSS stuff — so instead of chasing CVEs, we do the next best thing: “We already have admin… can we just upload/edit something evil?”
 
-<figure><img src=".gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 Poking around the admin tabs, the Theme section looks very promising.
 
-<figure><img src=".gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 We check the theme folder location and can see which theme files are being used.
 
 Then we find the real gift: "Theme editor".
 
-<figure><img src=".gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (8) (1).png" alt=""><figcaption></figcaption></figure>
 
 Maybe we can put a reverse shell in here? We grab a classic reverse shell payload ([pentestmonkey](https://github.com/pentestmonkey/php-reverse-shell/blob/master/php-reverse-shell.php) style), replace the file contents completely, and save it.
 
-<figure><img src=".gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (9) (1).png" alt=""><figcaption></figcaption></figure>
 
 Start the listener, then trigger the PHP file in the browser… And boom:
 

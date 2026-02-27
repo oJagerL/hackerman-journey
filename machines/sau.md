@@ -91,7 +91,7 @@ Nmap does its thing and reports back:
 
 And by “weird” I mean it’s speaking HTTP and casually throwing phrases like:  `invalid basket name` . Let’s visit it in the browser:
 
-<figure><img src="../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (10) (1).png" alt=""><figcaption></figcaption></figure>
 
 A quick look tells us what we’re dealing with: `requests-baskets v1.2.1`. So naturally… we google it. And yes — jackpot: SSRF vulnerability.
 
@@ -103,9 +103,9 @@ The exploit idea is simple:
 
 Basically: make the server browse the internet for us. So we set a forward URL in the basket config (like the exploit describes), then browse to the basket.
 
-<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 And suddenly… the machine starts showing us what’s running internally on port 80, even though port 80 was filtered from the outside. Filtered ports hate this one weird trick. And guess what? it’s `Maltrail v0.53`. A quick search drops us straight onto a PoC: [https://github.com/spookier/Maltrail-v0.53-Exploit?tab=readme-ov-file](https://github.com/spookier/Maltrail-v0.53-Exploit?tab=readme-ov-file). (Yes, the internet continues to be a treasure trove of bad decisions).
 

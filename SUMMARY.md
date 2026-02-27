@@ -13,3 +13,9 @@
 * [Facts](machines/facts.md)
 * [WingData](machines/wingdata.md)
 * [Interpreter](machines/interpreter.md)
+
+## Challenges
+
+***
+
+* [Social Media Investigation](social-media-investigation.md)
