@@ -32,7 +32,7 @@ So we check out the webpage:
 
 And right away there’s a big shiny `Client Portal` button that’s basically screaming "Click me, im important!"
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Boom — it’s an FTP web client. And not just any FTP web client… it’s running `Wing FTP Server v7.4.3`. Which is great news for us, because version numbers are basically loot boxes. A quick Google drive-by and we find an Exploit-DB PoC: [https://www.exploit-db.com/exploits/52347](https://www.exploit-db.com/exploits/52347) and honestly, it’s practically begging to be used.
 

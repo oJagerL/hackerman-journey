@@ -15,6 +15,10 @@
 * [Interpreter](machines/interpreter.md)
 * [CCTV](machines/cctv.md)
 
+## Sherlocks
+
+* [Advent of The Relics 1 - A Call from the Museum](sherlocks/advent-of-the-relics-1-a-call-from-the-museum.md)
+
 ## Challenges
 
 * [Social Media Investigation](challenges/social-media-investigation.md)
