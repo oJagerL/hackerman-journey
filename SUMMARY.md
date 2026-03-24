@@ -18,6 +18,7 @@
 ## Sherlocks
 
 * [Advent of The Relics 1 - A Call from the Museum](sherlocks/advent-of-the-relics-1-a-call-from-the-museum.md)
+* [Operation Blackout 2025: Phantom Check](sherlocks/operation-blackout-2025-phantom-check.md)
 
 ## Challenges
 

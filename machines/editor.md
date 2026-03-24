@@ -1,3 +1,22 @@
+---
+layout:
+  width: default
+  title:
+    visible: true
+  description:
+    visible: true
+  tableOfContents:
+    visible: true
+  outline:
+    visible: true
+  pagination:
+    visible: true
+  metadata:
+    visible: true
+  tags:
+    visible: true
+---
+
 # Editor
 
 So I _wanted_ to start with a clean Nmap scan like a responsible adult… …but I ran `-p-`, and Nmap basically decided it was going to retire on this box. It just kept scanning forever, and at some point I realized: "“Wait… port 80 is already talking. I don’t actually need Nmap to finish. Nmap can go meditate." So I ditched the scan mid-flight and moved on. And honestly? Didn’t need the full results at all.

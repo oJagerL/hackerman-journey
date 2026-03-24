@@ -1,5 +1,13 @@
 # Advent of The Relics 1 - A Call from the Museum
 
+**Sherlock Scenario**
+
+Read the campaign introduction and supporting information at [https://github.com/hackthebox/advent-of-the-relics](https://github.com/hackthebox/advent-of-the-relics)
+
+On a quiet mid-November evening, a fatigued CALE employee opened an unexpected email and, without much thought, followed the instructions it contained. Moments later, something felt off, panic set in, and he abruptly yanked the power cable from the wall to stop whatever had started. One month later, that same email resurfaces as the crucial starting point of a cyber investigation, holding the first clues to what really happened.
+
+The scenario portrayed in this challenge is entirely fictional and created solely for educational and entertainment purposes. Any resemblance to actual persons, living or dead, organizations, or real events is purely coincidental and unintentional. All characters, scenarios, and data presented are products of imagination.
+
 <details>
 
 <summary>Who is the suspicious sender of the email?</summary>
