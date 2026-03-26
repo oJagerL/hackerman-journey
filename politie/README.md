@@ -10,16 +10,16 @@ We start with the provided link to CryptoPizza: [https://crypto-pizza.nl/](https
 
 The site opens up to a dashboard. Very fancy. Very shady. Very “we definitely sell pizza and not crime.”
 
-<figure><img src=".gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 Registration appears to be disabled, which is usually the website’s way of saying:\
 “You are not welcome here unless you already know too much.”
 
-<figure><img src=".gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (8) (1).png" alt=""><figcaption></figcaption></figure>
 
 Clicking on dashboard leads to a login page. Naturally, the sacred ritual begins: `admin:admin`
 
-<figure><img src=".gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (9) (1).png" alt=""><figcaption></figcaption></figure>
 
 No luck. We get a 401. Even better, the payload doesn’t seem to be filled in correctly. Either the devs were incompetent, or they were _artistically insecure_. In CTFs, both are valid attack surfaces.\
 \
@@ -28,14 +28,14 @@ Time to poke at the URL:\
 
 Interesting. Changing `view=public` to `view=private` gives us: “The accesskey parameter is not set or invalid.”
 
-<figure><img src=".gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (10) (1).png" alt=""><figcaption></figcaption></figure>
 
 That is basically the application whispering:\
 “Come back with the secret sauce.”
 
 Checked `robots.txt` too, but it had absolutely nothing useful. A tragic waste of perfectly good optimism.
 
-<figure><img src=".gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src=".gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
 
 Back to the login page then. Time to inspect the source, because if web developers are going to leave secrets in comments, it would be rude not to read them.
 

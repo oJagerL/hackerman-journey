@@ -8,7 +8,7 @@ Ik ben op zoek naar een kwetsbaarheid, heb je die gevonden. Stuur die aan mij.
 
 We begin, as many great CTF adventures do, by being assaulted with a lot of messages and absolutely no immediate clue what matters and what is just there to waste our time.
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
 
 Naturally, the first thing screaming for attention is the QR code. And as responsible security researchers, our first thought is obviously: “Nice, let’s scan this and probably catch some virusses.”
 
@@ -18,7 +18,7 @@ The QR code spits out this gem:
 
 That has all the vibes of base64, so into CyberChef it goes:
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 It decodes to:
 
@@ -30,7 +30,7 @@ Bm pvs cvsofst bsf bu sjtl! Eftuspz uif efwjdft!
 
 That looks suspiciously like a Caesar cipher had a rough day, so we throw it into a decoder too.
 
-<figure><img src="../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
 
 Out comes:
 
@@ -100,19 +100,19 @@ Heading over to `shdwlnk.nl`, we are welcomed by a giant 418 page not available 
 
 So I start poking around in the browser console and logs, because when the frontend is broken, the developers have usually already hidden the next clue in plain sight out of sheer laziness.
 
-<figure><img src="../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 And there it is: `/api/v2/phonelog` . A GET request is not allowed. A POST request returns "Invalid request".
 
 Translation: “Yes, this is the right endpoint, but you still have to suffer a little”. Scrolling further through the code reveals the expected payload structure. Very kind of them, honestly. It’s like the web app wanted to help, but HR said it had to at least pretend to have security.
 
-<figure><img src="../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 The API wants a phone number. Luckily, one of the phone numbers had already shown up earlier in the chat messages, and for once my memory decided to be useful instead of storing random song lyrics from 2012.
 
 So I submitted that number, and got a response:
 
-<figure><img src="../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
 The number `+7 (949) 299-61` .
 
