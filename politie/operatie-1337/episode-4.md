@@ -375,11 +375,236 @@ Ga naar Hoofdstraat 54 in Driebergen, en laat weten dat je komt voor operatie 13
 
 
 
-To the policestation we go!
+To the policestation we go! We got a letter and a tshirt, the letter contained the code `7K52TYS5Z6`.
+
+***
+
+Task
+
+Jouw toegangscode is guest\_23dff48a, verstuur de bestanden naar onze server op: datatransfer.operatie1337.nl
 
 
 
+We ssh into the server, lets transfer:
+
+```shellscript
+❯ ssh shadow@in.shdwlnk.nl -i shdw.key
+[ Restricted Access System ]
+STATUS: Operational NODE: SL-GATEWAY-04
+SECURITY LEVEL: 3 (Medium) WARNING: All activities are logged and monitored. Unauthorized access will be reported to authorities.
+
+Voer uw toegangscode in: guest_23dff48a
+
+Welkom in ShadowLink OS. Voor dienstverlening plaats uw verzoek in: /clients/requests/
+Huidige tijd: 2026-03-28 14:20:18 UTC
+Laatste login: 2026-03-28 13:58:01 van 185.220.101.47
+
+Shadowlink-OS .$ transfer . datatransfer.operatie1337.nl 400
+connecting to "datatransfer.operatie1337.nl"
+transmitting data...
+
+0/89336
+200/89336
+400/89336
+600/89336
+800/89336
+1000/89336
+1200/89336
+1400/89336
+...
+88400/89336
+88600/89336
+88800/89336
+89000/89336
+89200/89336
+89336/89336
+transfer complete
+```
+
+***
+
+Task
+
+Schakel nu de software van Project Atlas uit.
 
 
 
+Lets kill atlas!
 
+```shellscript
+Shadowlink-OS .$ processes
+PID  PROCESS NAME    CPU%      MEM  STATUS
+--------------------------------------------
+127  netcore         0.3  6.611 MB  running
+284  daemon_srv      0.1  72.72 KB  running
+391  atlasrunner     6.2  74.74 MB  running
+456  cryptbridge     0.7  552.5 KB  running
+502  relay_node      1.3  5.592 MB  running
+618  packetscan      0.2  24.24 KB  running
+620  chat-app        0.6  9.926 MB  running
+721  Shǒuhù-chéngxù  0.5  4.458 MB  running
+889  sys_monitor     0.5  126.1 KB  running
+934  tunneld         1.2    568  B  running
+Shadowlink-OS .$ kill 391
+ERROR: Permission denied
+Process 'atlasrunner' (PID 391) requires root privileges to terminate.
+Shadowlink-OS .$
+```
+
+It seems we need root privileges, according to Sara we can use the code for this.
+
+```shellscript
+Shadowlink-OS .$ su
+Password:
+Access granted. You are now operating as superuser.
+WARNING: You have elevated privileges. Exercise caution.
+Shadowlink-OS .$ kill 391
+Terminating process 'atlasrunner' (PID 391) ...
+Process terminated successfully.
+WARNING: Critical system process stopped. Dependencies may be affected
+Shadowlink-OS .$
+```
+
+***
+
+Task
+
+Zorg dat er niets meer te herstarten valt!
+
+
+
+In the help command I already noticed there was an overclock command, so lets see how to use it:
+
+```shellscript
+Shadowlink-OS .$ overclock
+NAME
+       overclock - force hardware component beyond safe operational limits
+
+SYNOPSIS
+       overclock [device] [wattage]
+
+DESCRIPTION
+       Overrides safety protocols and forces the specified hardware device
+       to operate at dangerously elevated power levels. Sustained operation
+       beyond manufacturer specifications will cause permanent physical
+       damage to the component and connected systems.
+
+       WARNING: This command bypasses all thermal and electrical safeguards.
+       System instability, hardware failure, and fire hazard are expected
+       outcomes.
+
+PARAMETERS
+       device
+              Target hardware component identifier. Available devices:
+
+              CPU      - Central Processing Unit
+              GPU      - Graphics Processing Unit
+              MEMORY   - RAM modules and memory controller
+              NETWORK  - Network interface and routing hardware
+
+       wattage
+              Power level in watts to force through the device. Values
+              exceeding rated capacity will cause cascading failure.
+              Manufacturer limits are intentionally ignored.
+
+              Typical safe ranges (DO NOT EXCEED):
+              CPU:     65-125W
+              GPU:     150-350W
+              MEMORY:  10-25W
+              NETWORK: 5-50W
+
+EXAMPLES
+       overclock CPU 65
+              Forces CPU to draw 65W
+
+       overclock NETWORK 10
+              Pushes 10W through network hardware
+
+       overclock GPU 200
+              Overloads GPU with 200W
+
+
+NOTES
+       This command is irreversible. Once initiated, the overload process
+       cannot be stopped until hardware destruction occurs.
+
+       Cascading failures may propagate to connected infrastructure.
+
+       This operation leaves forensic evidence and is detectable by
+       monitoring systems.
+
+       Root privileges required.
+WARNINGS
+       - Permanent equipment damage
+       - Risk of electrical fire
+       - Potential harm to personnel near affected hardware
+       - Legal consequences for infrastructure sabotage
+​
+       Use only in authorized testing environments or emergency scenarios.
+```
+
+perfect, lets overload the network!
+
+```shellscript
+​Shadowlink-OS .$ overclock NETWORK 60
+Initializing overclock sequence...
+Target: NETWORK
+Power level: 60W (120.00001% of rated capacity)
+WARNING: This operation could cause permanent hardware damage.
+Are you sure you wish to continue? y/n:
+​
+[....................]   0%
+[█...................]   5%
+[██..................]  10%
+[███.................]  15%
+[████................]  20%
+[█████...............]  25%
+[██████..............]  30%
+[███████.............]  35%
+[████████............]  40%
+[█████████...........]  45%
+[██████████..........]  50%
+[███████████.........]  55%
+[████████████........]  60%
+[█████████████.......]  65%
+[██████████████......]  70%
+[███████████████.....]  75%
+[████████████████....]  80%
+[█████████████████...]  85%
+[██████████████████..]  90%
+[███████████████████.]  95%
+[████████████████████] 100%
+Bypassing thermal limiters... DONE
+Disabling safety protocols... DONE
+Routing power to NETWORK hardware...
+​
+10%  Temperature: 47°C - Normal
+25%  Temperature: 68°C - Elevated
+40%  Temperature: 89°C - Warning
+55%  Temperature: 112°C - CRITICAL
+70%  Temperature: 138°C - DANGER
+85%  Temperature: 167°C - FAILURE IMMINENT
+​
+ERROR: NETWORK hardware failure detected
+ERROR: Cascading failure in connected systems
+ERROR: Router banks 1-4 offline
+ERROR: Switch array thermal runaway
+ERROR: Fiber optic relays melted
+ERROR: Power supply failure
+​
+​
+████████ ██████ ███████
+CRITICAL SYSTEM FAILURE
+████████ ██████ ███████
+CRITICAL SYSTEM FAILURE
+████████ ██████ ███████
+CRITICAL SYSTEM FAILURE
+Network infrastructure destroyed
+Connection to remote systems lost
+Local system instability detected
+​
+[Connection terminated]
+Connection to in.shdwlnk.nl closed.
+```
+
+Nice, we stopped them.
