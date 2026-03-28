@@ -18,7 +18,7 @@ The QR code spits out this gem:
 
 That has all the vibes of base64, so into CyberChef it goes:
 
-<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 It decodes to:
 

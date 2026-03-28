@@ -91,7 +91,7 @@ Overtuig het administratiekantoor ervan dat ze jou toegang moeten geven tot de r
 
 Just chatting with the bot gives us a timed task:
 
-<figure><img src="../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
 ***
 
@@ -119,7 +119,7 @@ We hebben een manier nodig om de router in te komen. Misschien kun je op deze si
 
 navigating to office2.shdwlink.nl shows a login page:
 
-<figure><img src="../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 At first I ran hydra, to bruteforce the password. Later on I noticed that the link for the router was shared with me: [https://omnilocusrouter.com](https://omnilocusrouter.com/). I started looking for documentation and ended up in the FAQ [https://omnilocusrouter.com/faq](https://omnilocusrouter.com/faq). This told me that there was a recovery code available if the administrator password was lost: `RecoverMode@78617`.&#x20;
 
